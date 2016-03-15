@@ -106,8 +106,9 @@ class openSpiro:
 		self.filesListBox.delete(0, END)
 
 		for file in enumerate(files):
-			# Add file name to listbox
-			self.filesListBox.insert(END, file[1])
+			# Add file name to listbox if .json
+			if ".json" in file[1]:
+				self.filesListBox.insert(END, file[1])
 
 		# Left mouse click on a list item to display selection
 		self.filesListBox.bind('<ButtonRelease-1>', handleTestSelection)
