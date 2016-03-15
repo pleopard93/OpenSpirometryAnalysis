@@ -20,6 +20,15 @@ class graph2:
 		self.canvas.show()
 		self.canvas.get_tk_widget().pack(side=LEFT, fill=X, expand=1)
 
-	def showGraph(self, data):
+	def clearGraph(self):
 		self.a.clear()
 		self.canvas.draw()
+
+	def showGraph(self, data):
+		self.clearGraph()
+		# f, Pxx_den = signal.periodogram(data["FlowCurveInLitersPerSecond"])
+
+		# plt.semilogy(f, Pxx_den)
+		# plt.xlabel('frequency [Hz]')
+		# plt.ylabel('PSD [V**2/Hz]')
+		# plt.show()

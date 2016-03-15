@@ -1,5 +1,7 @@
 from Tkinter import *
 import json
+from os import listdir
+from os.path import isfile, join
 from graph1 import graph1
 from graph2 import graph2
 
@@ -12,24 +14,28 @@ class openSpiro:
 
 		self.layoutWindow()
 
+		self.showFileNames()
+
 
 	def layoutWindow(self):
 		# Create and add file label
-		self.fileLabel = Label(topFrame, text="Filename").pack(side=LEFT, anchor=NW, fill=X, expand=NO)
+		self.fileLabel = Label(topFrame, text="File Path").pack(side=LEFT, anchor=NW, fill=X, expand=NO)
 
 		# Create and add file entry
 		self.fileEntry = Entry(topFrame)
 		self.fileEntry.pack(side=LEFT, anchor=NW, fill=X, expand=NO)
-		self.fileEntry.insert(0, "001.json")
+		self.fileEntry.insert(0, "../")
 
 		# Create and add button
-		self.b1 = Button(topFrame, text='Load', command=lambda: self.beginAnalysis(self.getFileName())).pack(side=LEFT, anchor=NW, fill=X, expand=NO)
+		self.b1 = Button(topFrame, text='Load', command=lambda: self.showFileNames(self.getFileName())).pack(side=LEFT, anchor=NW, fill=X, expand=NO)
 
 		# Create listboxes
+		self.filesListBox = Listbox(middleFrame1, width=50, height=6)
 		self.testListBox = Listbox(middleFrame1, width=50, height=6)
 		self.effortsListBox = Listbox(middleFrame1, width=4, height=6)
 
 		# Pack listboxes
+		self.filesListBox.pack(side=LEFT, fill=BOTH, anchor=W, expand=YES)
 		self.testListBox.pack(side=LEFT, fill=BOTH, anchor=W, expand=YES)
 		self.effortsListBox.pack(side=LEFT, fill=BOTH, anchor=E, expand=YES)
 
@@ -58,6 +64,53 @@ class openSpiro:
 	def getFileName(self):
 		return str(self.fileEntry.get())
 
+	def clearFields(self, willClearTests, willClearEfforts):
+		"""
+		Clear necessary fields depending on updated selection
+		"""
+		self.graph1.clearGraph()
+		self.graph2.clearGraph()
+
+		# Clear listboxes
+		if willClearTests:
+			self.testListBox.delete(0, END)
+
+		if willClearEfforts:
+			self.effortsListBox.delete(0, END)
+
+		# Clear text labels
+		self.l1.config(text="Completion time: ")
+		self.l2.config(text="FEVOne / FVC: ")
+		self.l3.config(text="FVC in Liters: ")
+		self.l4.config(text="FEVOne in Liters: ")
+
+
+	def showFileNames(self, filePath="../"):
+		# Clear all fields before showing new files
+		self.clearFields(True, True)
+
+		files = [f for f in listdir(filePath) if isfile(join(filePath, f))]
+
+		def handleTestSelection(event):
+			"""
+			Reads the listbox selection
+			"""
+			self.clearFields(False, True)
+			# Get selected line index
+			index = self.filesListBox.curselection()[0]
+
+			if ".json" in files[index]:
+				self.beginAnalysis(filePath + "/" + files[index])
+
+		# Clear listbox
+		self.filesListBox.delete(0, END)
+
+		for file in enumerate(files):
+			# Add file name to listbox
+			self.filesListBox.insert(END, file[1])
+
+		# Left mouse click on a list item to display selection
+		self.filesListBox.bind('<ButtonRelease-1>', handleTestSelection)
 
 	def showTestVariables(self, data):
 		"""
@@ -96,6 +149,8 @@ class openSpiro:
 			"""
 			Reads the listbox selection
 			"""
+			self.clearFields(False, False)
+
 			# Get selected line index
 			index = self.testListBox.curselection()[0]
 			self.showEfforts(data["Tests"][index])
