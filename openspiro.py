@@ -31,7 +31,7 @@ class openSpiro:
 		# Pack listboxes
 		self.testListBox.pack(side=LEFT, fill=BOTH, anchor=W, expand=YES)
 		self.effortsListBox.pack(side=LEFT, fill=BOTH, anchor=E, expand=YES)
-		
+
 		# Create text labels
 		self.l1 = Label(middleFrame2, text="Completion time: ")
 		self.l2 = Label(middleFrame2, text="FEVOne / FVC: ")
@@ -59,7 +59,7 @@ class openSpiro:
 		"""
 		Shows test values in window
 		"""
-		self.l1.config(text="Completion time: " + data["Completion (Formatted)"])
+		self.l1.config(text="Completion time: " + data["Completion"])
 		self.l2.config(text="FEVOne / FVC: " + repr(data["Efforts"][0]["FEVOneOverFVC"]))
 		self.l3.config(text="FVC in Liters: " + repr(data["Efforts"][0]["FVCInLiters"]))
 		self.l4.config(text="FEVOne in Liters: " + repr(data["Efforts"][0]["FVCInLiters"]))
@@ -96,13 +96,13 @@ class openSpiro:
 			index = self.testListBox.curselection()[0]
 			self.showEfforts(data["Tests"][index])
 
-		# Clear listbox 
+		# Clear listbox
 		self.testListBox.delete(0, END)
 
 		for index, test in enumerate(data["Tests"]):
 			# Add test mouthpiece and downstream tube to list box
 			# Add 1 to the index to soothe the OCD
-			self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["Downstream Tube"])
+			self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["DownstreamTube"])
 
 		# Left mouse click on a list item to display selection
 		self.testListBox.bind('<ButtonRelease-1>', handleTestSelection)
