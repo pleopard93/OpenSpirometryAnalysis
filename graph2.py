@@ -8,19 +8,18 @@ from matplotlib.figure import Figure
 
 from numpy import arange, sin, pi
 
+class graph2:
+	def __init__(self,  frame):
+		f = Figure(figsize=(5, 4), dpi=100)
+		self.a = f.add_subplot(111)
+		t = arange(0.0, 3.0, 0.01)
+		s = sin(2*pi*t)
 
-def showGraph(frame, data):
-	f = Figure(figsize=(5, 4), dpi=100)
-	a = f.add_subplot(111)
-	t = arange(0.0, 3.0, 0.01)
-	s = sin(2*pi*t)
+		self.a.plot(t, s)
+		self.canvas = FigureCanvasTkAgg(f, master=frame)
+		self.canvas.show()
+		self.canvas.get_tk_widget().pack(side=LEFT, fill=X, expand=1)
 
-	a.plot(t, s)
-	canvas = FigureCanvasTkAgg(f, master=frame)
-	canvas.show()
-	canvas.get_tk_widget().pack(side=LEFT, fill=X, expand=1)
-
-
-
-
-
+	def showGraph(self, data):
+		self.a.clear()
+		self.canvas.draw()

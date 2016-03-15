@@ -1,6 +1,7 @@
 from Tkinter import *
 import json
-import graph1, graph2
+from graph1 import graph1
+from graph2 import graph2
 
 class openSpiro:
 	def __init__(self,  window):
@@ -19,7 +20,7 @@ class openSpiro:
 		# Create and add file entry
 		self.fileEntry = Entry(topFrame)
 		self.fileEntry.pack(side=LEFT, anchor=NW, fill=X, expand=NO)
-		self.fileEntry.insert(0, "123.json")
+		self.fileEntry.insert(0, "001.json")
 
 		# Create and add button
 		self.b1 = Button(topFrame, text='Load', command=lambda: self.beginAnalysis(self.getFileName())).pack(side=LEFT, anchor=NW, fill=X, expand=NO)
@@ -43,6 +44,9 @@ class openSpiro:
 		self.l2.pack(side=TOP, anchor=N, fill=X, expand=YES)
 		self.l3.pack(side=TOP, anchor=N, fill=X, expand=YES)
 		self.l4.pack(side=TOP, anchor=N, fill=X, expand=YES)
+
+		self.graph1 = graph1(bottomFrame)
+		self.graph2 = graph2(bottomFrame)
 
 		# Pack frames
 		topFrame.pack(side=TOP, anchor=NW, expand=YES)
@@ -120,8 +124,8 @@ class openSpiro:
 			# Get selected line index
 			index = self.effortsListBox.curselection()[0]
 			self.showTestVariables(data)
-			graph1.showGraph(bottomFrame, data["Efforts"][index])
-			graph2.showGraph(bottomFrame, data["Efforts"][index])
+			self.graph1.showGraph(data["Efforts"][index])
+			self.graph2.showGraph(data["Efforts"][index])
 
 		# Clear listbox
 		self.effortsListBox.delete(0, END)
