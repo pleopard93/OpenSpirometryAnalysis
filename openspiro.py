@@ -4,6 +4,9 @@ from os import listdir
 from os.path import isfile, join
 from graph1 import graph1
 from graph2 import graph2
+import pdb
+
+labelText = ["Completion Time:","Effort Notes:","Test Notes:","Group:","PWG Params:"]
 
 class openSpiro:
 	def __init__(self,  window):
@@ -13,7 +16,6 @@ class openSpiro:
 		self.window = window
 
 		self.layoutWindow()
-
 		self.showFileNames()
 
 
@@ -24,10 +26,11 @@ class openSpiro:
 		# Create and add file entry
 		self.fileEntry = Entry(topFrame)
 		self.fileEntry.pack(side=LEFT, anchor=NW, fill=X, expand=NO)
-		self.fileEntry.insert(0, "../")
+		self.fileEntry.insert(0, "../audio_curve_data/")
+		self.audioJSONDirectory = "../audio_curve_data/"
 
 		# Create and add button
-		self.b1 = Button(topFrame, text='Load', command=lambda: self.showFileNames(self.getFileName())).pack(side=LEFT, anchor=NW, fill=X, expand=NO)
+		self.b1 = Button(topFrame, text='Load', command=self.buttonLoadPressed).pack(side=LEFT, anchor=NW, fill=X, expand=NO)
 
 		# Create listboxes
 		self.filesListBox = Listbox(middleFrame1, width=50, height=6)
@@ -40,16 +43,18 @@ class openSpiro:
 		self.effortsListBox.pack(side=LEFT, fill=BOTH, anchor=E, expand=YES)
 
 		# Create text labels
-		self.l1 = Label(middleFrame2, text="Completion time: ")
-		self.l2 = Label(middleFrame2, text="FEVOne / FVC: ")
-		self.l3 = Label(middleFrame2, text="FVC in Liters: ")
-		self.l4 = Label(middleFrame2, text="FEVOne in Liters: ")
+		self.l1 = Label(middleFrame2, text=labelText[0])
+		self.l2 = Label(middleFrame2, text=labelText[1])
+		self.l3 = Label(middleFrame2, text=labelText[2])
+		self.l4 = Label(middleFrame2, text=labelText[3])
+		self.l5 = Label(middleFrame2, text=labelText[4])
 
 		# Add text labels
 		self.l1.pack(side=TOP, anchor=N, fill=X, expand=YES)
 		self.l2.pack(side=TOP, anchor=N, fill=X, expand=YES)
 		self.l3.pack(side=TOP, anchor=N, fill=X, expand=YES)
 		self.l4.pack(side=TOP, anchor=N, fill=X, expand=YES)
+		self.l5.pack(side=TOP, anchor=N, fill=X, expand=YES)
 
 		self.graph1 = graph1(bottomFrame)
 		self.graph2 = graph2(bottomFrame)
@@ -60,9 +65,15 @@ class openSpiro:
 		middleFrame2.pack(side=TOP, fill=BOTH, expand=YES)
 		bottomFrame.pack(side=BOTTOM, fill=BOTH, anchor=SW, expand=YES)
 
+		self.waveform = {}
+
 
 	def getFileName(self):
 		return str(self.fileEntry.get())
+
+	def buttonLoadPressed(self):
+		self.audioJSONDirectory = self.getFileName()
+		self.showFileNames(self.audioJSONDirectory)
 
 	def clearFields(self, willClearTests, willClearEfforts):
 		"""
@@ -79,17 +90,18 @@ class openSpiro:
 			self.effortsListBox.delete(0, END)
 
 		# Clear text labels
-		self.l1.config(text="Completion time: ")
-		self.l2.config(text="FEVOne / FVC: ")
-		self.l3.config(text="FVC in Liters: ")
-		self.l4.config(text="FEVOne in Liters: ")
+		self.l1.config(text=labelText[0])
+		self.l2.config(text=labelText[1])
+		self.l3.config(text=labelText[2])
+		self.l4.config(text=labelText[3])
+		self.l5.config(text=labelText[4])
 
 
 	def showFileNames(self, filePath="../"):
 		# Clear all fields before showing new files
 		self.clearFields(True, True)
 
-		files = [f for f in listdir(filePath) if isfile(join(filePath, f))]
+		files = [f for f in listdir(filePath) if isfile(join(filePath, f)) and ".json" in f]
 
 		def handleTestSelection(event):
 			"""
@@ -100,6 +112,7 @@ class openSpiro:
 			index = self.filesListBox.curselection()[0]
 
 			if ".json" in files[index]:
+				self.waveform = self.readWaveformData(files[index][0:3])
 				self.beginAnalysis(filePath + "/" + files[index])
 
 		# Clear listbox
@@ -113,14 +126,30 @@ class openSpiro:
 		# Left mouse click on a list item to display selection
 		self.filesListBox.bind('<ButtonRelease-1>', handleTestSelection)
 
-	def showTestVariables(self, data):
+	def showTestVariables(self, data, metadata):
 		"""
 		Shows test values in window
 		"""
-		self.l1.config(text="Completion time: " + data["Completion"])
-		self.l2.config(text="FEVOne / FVC: " + repr(data["Efforts"][0]["FEVOneOverFVC"]))
-		self.l3.config(text="FVC in Liters: " + repr(data["Efforts"][0]["FVCInLiters"]))
-		self.l4.config(text="FEVOne in Liters: " + repr(data["Efforts"][0]["FVCInLiters"]))
+		index = self.effortsListBox.curselection()[0]
+
+		effortNotesData = 'No Effort Notes'
+		if "Notes" in data["Efforts"][index].keys():
+			effortNotesData = repr(data["Efforts"][index]["Notes"])
+
+		testNotesData = 'No Test Notes'
+		if "Notes" in data.keys():
+			testNotesData = repr(data["Notes"])
+
+		self.l1.config(text=labelText[0] + ' ' + data["CompletionFormatted"])
+		self.l2.config(text=labelText[1] + ' ' + effortNotesData)
+		self.l3.config(text=labelText[2] + ' ' + testNotesData)
+		self.l4.config(text=labelText[3] + ' ' + metadata["UserGroup"])
+
+		if self.waveform is not None:
+			self.l5.config(text=labelText[4] + ' ' + str(self.waveform["Parameters"]))
+		else:
+			self.l5.config(text=labelText[4] + ' None')
+
 
 
 	def beginAnalysis(self, filename):
@@ -135,6 +164,7 @@ class openSpiro:
 		"""
 		Loads test data from JSON file and returns
 		"""
+
 		with open(filename) as data_file:
 			data = json.load(data_file)
 
@@ -154,7 +184,7 @@ class openSpiro:
 
 			# Get selected line index
 			index = self.testListBox.curselection()[0]
-			self.showEfforts(data["Tests"][index])
+			self.showEfforts(data["Tests"][index],data["Metadata"])
 
 		# Clear listbox
 		self.testListBox.delete(0, END)
@@ -162,13 +192,14 @@ class openSpiro:
 		for index, test in enumerate(data["Tests"]):
 			# Add test mouthpiece and downstream tube to list box
 			# Add 1 to the index to soothe the OCD
+
 			self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["DownstreamTube"])
 
 		# Left mouse click on a list item to display selection
 		self.testListBox.bind('<ButtonRelease-1>', handleTestSelection)
 
 
-	def showEfforts(self, data):
+	def showEfforts(self, data, metadata):
 		"""
 		Show the list of efforts for each mouthpiece-downstream tube combination.
 		When user selects an effort, the test results will show.
@@ -179,9 +210,9 @@ class openSpiro:
 			"""
 			# Get selected line index
 			index = self.effortsListBox.curselection()[0]
-			self.showTestVariables(data)
-			self.graph1.showGraph(data["Efforts"][index])
-			self.graph2.showGraph(data["Efforts"][index])
+			self.showTestVariables(data, metadata)
+			self.graph1.showGraph(data["Efforts"][index],self.audioJSONDirectory)
+			self.graph2.showGraph(data["Efforts"][index],self.audioJSONDirectory, self.waveform)
 
 		# Clear listbox
 		self.effortsListBox.delete(0, END)
@@ -193,6 +224,41 @@ class openSpiro:
 
 		# Left mouse click on a list item to display selection
 		self.effortsListBox.bind('<ButtonRelease-1>', handleEffortSelection)
+
+	def readWaveformData(self, jsonFilename):
+		pid = float(jsonFilename)
+
+		if pid>99: # not a PWG waveform
+			return None
+		filepath = "Waveform/ATS26/26%02d.wf"%((pid))
+
+		waveform_data = {}
+		waveform_data["Header"]={}
+		waveform_data["Parameters"]={}
+		waveform_data["Data"]=[]
+		currSection = ""
+		with open(filepath) as f:
+		    data = f.readlines()
+		    for dline in data:
+		        sectionChanged = False
+		        # know the current section
+		        for sec in ["Header","Parameters","Data"]:
+		            if dline.find(sec) != -1:
+		                currSection = sec
+		                sectionChanged = True 
+		        if sectionChanged:
+		            continue 
+		            
+		        dline = dline.strip()
+		        if (currSection=="Header" or currSection=="Parameters") and len(dline)>1:
+		            keyval = dline.split("=")
+		            if keyval[1][0].isdigit():
+		                keyval[1] = float(keyval[1])
+		            waveform_data[currSection][keyval[0]] = keyval[1]
+		        elif currSection=="Data" and len(dline)>1:
+		            waveform_data[currSection].append(float(dline))
+		return waveform_data
+    
 
 # Create window and set title
 window = Tk()

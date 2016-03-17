@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 from numpy import arange, sin, pi
+from scipy.io import wavfile
 
 class graph1:
 	def __init__(self,  frame):
@@ -24,8 +25,12 @@ class graph1:
 		self.a.clear()
 		self.canvas.draw()
 
-	def showGraph(self, data):
+	def showGraph(self, data, dirname):
 		self.clearGraph()
+		filename = data["RecordedAudioFilenameForEffort"]
+		fs, audio_data = wavfile.read(dirname + filename)
+		self.a.plot(audio_data)
+		self.canvas.show()
 		# f, Pxx_den = signal.periodogram(data["FlowCurveInLitersPerSecond"])
 
 		# plt.semilogy(f, Pxx_den)
