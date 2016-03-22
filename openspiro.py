@@ -112,7 +112,6 @@ class openSpiro:
 			index = self.filesListBox.curselection()[0]
 
 			if ".json" in files[index]:
-				self.waveform = self.readWaveformData(files[index][0:3])
 				self.beginAnalysis(filePath + "/" + files[index])
 
 		# Clear listbox
@@ -140,7 +139,12 @@ class openSpiro:
 		if "Notes" in data.keys():
 			testNotesData = repr(data["Notes"])
 
-		self.l1.config(text=labelText[0] + ' ' + data["CompletionFormatted"])
+		if "CompletionFormatted" in data:
+			self.l1.config(text=labelText[0] + ' ' + data["CompletionFormatted"])
+		else:
+			self.l1.config(text=labelText[0] + ' unknown')
+
+		
 		self.l2.config(text=labelText[1] + ' ' + effortNotesData)
 		self.l3.config(text=labelText[2] + ' ' + testNotesData)
 		self.l4.config(text=labelText[3] + ' ' + metadata["UserGroup"])
@@ -192,8 +196,10 @@ class openSpiro:
 		for index, test in enumerate(data["Tests"]):
 			# Add test mouthpiece and downstream tube to list box
 			# Add 1 to the index to soothe the OCD
-
-			self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["DownstreamTube"])
+			if "DownstreamTube" in test.keys():
+				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["DownstreamTube"])
+			else:
+				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] )
 
 		# Left mouse click on a list item to display selection
 		self.testListBox.bind('<ButtonRelease-1>', handleTestSelection)
@@ -210,6 +216,9 @@ class openSpiro:
 			"""
 			# Get selected line index
 			index = self.effortsListBox.curselection()[0]
+			self.waveform = None
+			if "PWGFile" in data.keys():
+				self.waveform = self.readWaveformData(data["PWGFile"])
 			self.showTestVariables(data, metadata)
 			self.graph1.showGraph(data["Efforts"][index],self.audioJSONDirectory)
 			self.graph2.showGraph(data["Efforts"][index],self.audioJSONDirectory, self.waveform)
@@ -225,12 +234,12 @@ class openSpiro:
 		# Left mouse click on a list item to display selection
 		self.effortsListBox.bind('<ButtonRelease-1>', handleEffortSelection)
 
-	def readWaveformData(self, jsonFilename):
-		pid = float(jsonFilename)
+	def readWaveformData(self, atsfile):
 
-		if pid>99: # not a PWG waveform
+		if atsfile is None: # not a PWG waveform
 			return None
-		filepath = "Waveform/ATS26/26%02d.wf"%((pid))
+
+		filepath = self.convertFileToFilePath(atsfile)
 
 		waveform_data = {}
 		waveform_data["Header"]={}
@@ -258,6 +267,43 @@ class openSpiro:
 		        elif currSection=="Data" and len(dline)>1:
 		            waveform_data[currSection].append(float(dline))
 		return waveform_data
+
+
+	def convertFileToFilePath(self, atsfile):
+		prefix = "Waveform/"
+
+		if atsfile.find("ATS24.") >= 0:
+			prefix += "ATS24/"
+			tmp = atsfile.split(".")
+			prefix += "24%02d.wf"%(int(tmp[1]))
+
+		elif atsfile.find("ATS24*.") >= 0:
+			prefix += "ATS24v2/"
+			tmp = atsfile.split(".")
+			prefix += "24%02d.wf"%(int(tmp[1]))
+
+		elif atsfile.find("ATS26.") >= 0:
+			prefix += "ATS26/"
+			tmp = atsfile.split(".")
+			prefix += "26%02d.wf"%(int(tmp[1]))
+
+		elif atsfile.find("Prof") >= 0:
+			prefix += "ISO23747/"
+			prefix += atsfile + ".wf"
+
+		elif atsfile.find("ISO2678") >= 0:
+			prefix += "ISO26782/"
+			tmp = atsfile.split(".")
+			prefix += "26782%02d.wf"%(int(tmp[1]))
+
+		elif atsfile.find("Custom") >= 0:
+			tmp = atsfile.split(".")
+			prefix += "Custom%02d.wf"%(int(tmp[1]))
+		else:
+			return None
+
+		return prefix                       
+
     
 
 # Create window and set title
