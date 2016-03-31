@@ -78,6 +78,7 @@ class graph2:
 		P_NFFT = 2048
 		P,P_f,P_t,im = plt.specgram(audio_data, NFFT=P_NFFT, Fs=fs, noverlap=P_NFFT-P_skip)
 		P = P.astype(np.float)
+		ax2.pcolorfast(P_t,P_f,20*np.log(P),cmap=plt.cm.bone)
 
 		plt.show()
 		return
