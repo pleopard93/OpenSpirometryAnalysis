@@ -122,6 +122,8 @@ class openSpiro:
 			if ".json" in file[1]:
 				self.filesListBox.insert(END, file[1])
 
+		self.filesListBox.configure(exportselection=False)
+
 		# Left mouse click on a list item to display selection
 		self.filesListBox.bind('<ButtonRelease-1>', handleTestSelection)
 
@@ -197,9 +199,11 @@ class openSpiro:
 			# Add test mouthpiece and downstream tube to list box
 			# Add 1 to the index to soothe the OCD
 			if "DownstreamTube" in test.keys():
-				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["DownstreamTube"])
+				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["DownstreamTube"] + " - " + test["Sidestack"] + " - " + test["PWGFile"] )
 			else:
 				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] )
+
+		self.testListBox.configure(exportselection=False)
 
 		# Left mouse click on a list item to display selection
 		self.testListBox.bind('<ButtonRelease-1>', handleTestSelection)

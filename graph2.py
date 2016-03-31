@@ -12,7 +12,7 @@ from scipy.io import wavfile
 from matplotlib import pyplot as plt
 import pdb
 
-from skimage import morphology as mp
+# from skimage import morphology as mp
 
 class graph2:
 	def __init__(self,  frame):
@@ -75,9 +75,11 @@ class graph2:
 
 		ax2 = plt.subplot(2,1,2,sharex=ax1)
 		P_skip = 128
-		P_NFFT = 2048
+		P_NFFT = 2048*2
 		P,P_f,P_t,im = plt.specgram(audio_data, NFFT=P_NFFT, Fs=fs, noverlap=P_NFFT-P_skip)
 		P = P.astype(np.float)
+		ax2.pcolorfast(P_t,P_f,20*np.log(P),cmap=plt.cm.bone)
+
 		ax2.pcolorfast(P_t,P_f,20*np.log(P),cmap=plt.cm.bone)
 
 		plt.show()
