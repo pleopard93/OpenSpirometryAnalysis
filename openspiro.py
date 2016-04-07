@@ -192,6 +192,14 @@ class openSpiro:
 			index = self.testListBox.curselection()[0]
 			self.showEfforts(data["Tests"][index],data["Metadata"])
 
+
+			if "PWGFile" in data['Tests'][index].keys():
+				self.waveform = self.readWaveformData(data['Tests'][index]["PWGFile"])
+				if self.waveform is not None:
+					self.l5.config(text=labelText[4] + ' ' + str(self.waveform["Parameters"]))
+				else:
+					self.l5.config(text=labelText[4] + ' None')
+
 		# Clear listbox
 		self.testListBox.delete(0, END)
 
@@ -199,9 +207,11 @@ class openSpiro:
 			# Add test mouthpiece and downstream tube to list box
 			# Add 1 to the index to soothe the OCD
 			if "DownstreamTube" in test.keys():
+				self.labstr = test["Mouthpiece"] + " - " + test["DownstreamTube"] + " - " + test["Sidestack"]
 				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + " - " + test["DownstreamTube"] + " - " + test["Sidestack"] + " - " + test["PWGFile"] )
-			else:
-				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] )
+			elif "PWGFile" in test.keys():
+				self.labstr = test["Mouthpiece"]
+				self.testListBox.insert(END, repr(index+1) + ".) " + test["Mouthpiece"] + test["PWGFile"] )
 
 		self.testListBox.configure(exportselection=False)
 
@@ -224,8 +234,8 @@ class openSpiro:
 			if "PWGFile" in data.keys():
 				self.waveform = self.readWaveformData(data["PWGFile"])
 			self.showTestVariables(data, metadata)
-			self.graph1.showGraph(data["Efforts"][index],self.audioJSONDirectory)
-			self.graph2.showGraph(data["Efforts"][index],self.audioJSONDirectory, self.waveform)
+			self.graph1.showGraph(data["Efforts"][index],self.audioJSONDirectory, self.waveform)
+			self.graph2.showGraph(data["Efforts"][index],self.audioJSONDirectory, self.waveform, self.labstr)
 
 		# Clear listbox
 		self.effortsListBox.delete(0, END)

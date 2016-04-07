@@ -9,7 +9,8 @@ fZoom=0.625
 vZoom=1
 
 [Parameters]
-PEF=7,5
+PEF=7.5
+
 [Data]
 0.000000
 0.000000

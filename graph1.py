@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 
 from numpy import arange, sin, pi
 from scipy.io import wavfile
+import numpy as np
 
 class graph1:
 	def __init__(self,  frame):
@@ -25,11 +26,26 @@ class graph1:
 		self.a.clear()
 		self.canvas.draw()
 
-	def showGraph(self, data, dirname):
+	def showGraph(self, data, dirname, waveform=None):
 		self.clearGraph()
+
+
 		filename = data["RecordedAudioFilenameForEffort"]
-		fs, audio_data = wavfile.read(dirname + filename)
-		self.a.plot(audio_data)
+
+		if waveform is not None:
+			# plot the waveform of the test
+			t = np.arange(0,len(waveform["Data"])).astype(np.float)/float(waveform["Header"]["Freq"])
+			
+			w = waveform["Data"]
+			# add proper axes
+			if waveform["Header"]["Type"] =="VT":
+				self.a.set_xlabel('time (s)')
+				self.a.set_ylabel('volume (L)')
+			elif waveform["Header"]["Type"] =="FT":
+				self.a.set_xlabel('time (s)')
+				self.a.set_ylabel('flow (L/sec)')
+			self.a.plot(t,w)
+
 		self.canvas.show()
 		# f, Pxx_den = signal.periodogram(data["FlowCurveInLitersPerSecond"])
 
